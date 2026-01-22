@@ -24,6 +24,9 @@
 
 ---
 
+[![](https://markdown-videos-api.jorgenkh.no/youtube/1HWzYPiMkJc)](https://youtu.be/1HWzYPiMkJc)
+
+---
 
 # Install
 
@@ -107,6 +110,8 @@ Final login parameters:
 
 PS: This map supports backdoor access control for public-facing hosts only. 
 Backdoor hosts located in private (LAN) networks cannot be controlled or viewed.
+
+[![](https://markdown-videos-api.jorgenkh.no/youtube/XeB6ur9F_ns)](https://youtu.be/XeB6ur9F_ns)
 
 `$ chmod 600 ./auth_protect/id_rsa`
 
