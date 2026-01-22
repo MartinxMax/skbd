@@ -32,12 +32,18 @@
 
 
 `$ git clone https://github.com/MartinxMax/skbd.git;cd skbd`
+
 `$ python3 -m venv skbd`
+
 `$ sudo apt install -y libxcb-xinerama0 libxcb-cursor0 libxcb-icccm4 libxkbcommon-x11-0 libgl1 libqt5gui5t64`
+
 `$ source skbd/bin/activate`
+
 `(skbd)$ pip install --upgrade pip`
+
 `(skbd)$ pip install -r requirements.txt`
 
+---
 
 # SKBD Usage
 
@@ -122,3 +128,4 @@ Backdoor hosts located in private (LAN) networks cannot be controlled or viewed.
 ![alt text](./pic/map1.png)
 
 ![alt text](./pic/map2.png)
+
