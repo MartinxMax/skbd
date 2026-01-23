@@ -20,7 +20,7 @@
    Supports multiple SSH users who can log in independently without passwords, providing increased flexibility and stealth.
 
 6. **Portability and Data Migration**  
-   The tool allows you to package all the server’s machine files and send them to another user. This enables seamless migration, allowing for control to be deployed across different systems.
+    A C2‑less backdoor architecture: once an SKBD server host obtains client data, the entire control state can be migrated by packaging and transferring the server configuration directories (auth_protect, machines) to any other machine, thereby preserving full control.
 
 ---
 
@@ -128,4 +128,5 @@ Backdoor hosts located in private (LAN) networks cannot be controlled or viewed.
 ![alt text](./pic/map1.png)
 
 ![alt text](./pic/map2.png)
+
 
