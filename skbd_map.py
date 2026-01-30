@@ -15,39 +15,58 @@ import threading
 
 from PyQt5.QtGui import QCursor
 from PyQt5.QtCore import QPoint, Qt, QUrl, QTimer, QObject, pyqtSlot, QThread, pyqtSignal
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QGraphicsOpacityEffect
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QGraphicsOpacityEffect 
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWebChannel import QWebChannel
 
  
 from lib.location import Location   
-
+import random  
+import socket   
 log = LogCat()
+BLACK   = "\033[30m"
+RED     = "\033[31m"
+GREEN   = "\033[32m"
+YELLOW  = "\033[33m"
+BLUE    = "\033[34m"
+MAGENTA = "\033[35m"
+CYAN    = "\033[36m"
+WHITE   = "\033[37m"
+BRIGHT_PURPLE = "\033[95m"
+RESET = "\033[0m"
 
-LOGO = r'''
-                                            ___
-                                         _/`.-'`.
-                               _      _/` .  _.'
-                      ..:::::.(_)   /` _.'_./
-                    .oooooooooo\ \o/.-'__.'o.  .---.     __
-                   .ooooooooo`._\_|_.'`oooooob/ .-. \   / ")
-                  .ooooooooooooooooooooo&&o##/ /b. \ '-' /`
-         _     .--oooooooooooooooooooo&@@@##(_/#ob. '---'
-        ("\   / .-.`\ooooooooooooo.-.ooo&&@#####oob.
-         \ '-' /doo\ \##ooooooooo/ _")ooooo&@@@@ooob
-          '---' dooo\_)##ooooooo/ /oooooooo&@@@oooob
-                dooo####ooooooo/ /oooooooo&@@@ooooob
-                dooooooooooooo( (oooooooo&@@oooooob
-                `dooooooooooooo\ \oooooo#...@ooooo.---.
-                 `dooooooooooo##) )#ooo##(_ \oooo/ .-. \\
-             .---.`doooo###oo##(_/##oooo###\ \oo/ /   \")
-           _/ .-. \`do/`__)#oo#####ooooooooo'.__.'     `
-          ("_/   \ '-' /###ooooooooooooooooooob'
-           `      '--'doooooooooooooooooooooob'
-                      `dojgsooooobodoooooooob'
-                       `doooooooob dooooooob'
-                         `"""""""' `""""""'
+LOGO = f'''{BRIGHT_PURPLE}
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⡤⠤⠤⠤⠤⠤⠤⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠤⠖⢉⠭⠀⠴⠘⠩⡢⠏⠘⡵⢒⠬⣍⠲⢤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠊⣡⠔⠃⠀⠰⠀⠀⠀⠀⠈⠂⢀⠀⢋⠞⣬⢫⣦⣍⢢⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⢫⣼⠿⠁⠀⠀⠀⠐⠀⠀⠰⠀⠢⠈⠀⠠⠀⢚⡥⢏⣿⣿⣷⡵⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⢓⣽⡓⡅⠀⠀⠀⠄⠀⠀⠄⠀⠁⠀⠀⠌⢀⠀⡸⣜⣻⣿⣿⣿⣿⣼⡀⠀⠀⠀⢀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⢀⡤⣤⣄⣠⠤⣄⠀⠀⠀⠀⠀⠀⠀⢀⣧⣿⡷⠹⠂⠀⠂⠀⢀⠠⠈⠀⠌⠀⠁⢈⠀⠄⢀⡷⣸⣿⣿⣿⣿⣿⣧⠃⠀⡴⢋⢠⣤⣦⣬⣕⢤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⣔⣵⣿⣻⣯⣍⣉⠚⢕⢆⠀⠀⠀⠀⠀⢸⢾⣽⡷⡂⠀⠀⠄⠂⠀⡀⠄⠂⠀⠌⠀⡀⠀⢀⡾⣯⢿⣿⣿⣿⣿⣿⣿⠰⠸⠠⢠⣾⣿⣿⣷⣿⣷⣕⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⣼⣿⣿⠿⠿⢿⣿⣇⡛⡻⣧⠀⠀⠀⠀⢼⢸⡟⡧⣧⠀⠃⠀⡀⠄⠀⢀⠠⠘⠀⠠⠀⠀⡟⢧⣛⣿⣿⣿⣿⣿⣿⣧⠇⠀⡇⢻⣿⣿⣿⠟⠻⣿⣿⣇⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⣿⣿⠁⣠⣤⠀⠙⢿⣿⡤⢘⣆⠀⠀⠀⢹⣼⣿⡽⠖⠁⠀⢤⠀⠀⡐⠀⢀⠐⠈⠀⢠⠖⠙⠣⠟⣻⢿⣿⣟⣿⡿⠃⠀⠀⠃⢼⣿⣧⠀⠀⠀⠸⣿⣣⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⣿⣿⣆⣿⡟⠀⠀⠀⣿⡇⠰⢸⠀⠀⠀⡸⡻⡕⠉⠀⠀⡐⠀⠈⠁⠀⠀⢠⠀⡴⠀⡠⠀⢀⠤⡲⠟⣉⠻⣿⣟⠁⠀⠀⠀⡅⢺⣿⣿⠃⠀⠀⠀⠈⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠈⠙⠛⠉⠀⠀⠀⣀⡿⣗⠧⣼⠀⠄⡎⣿⣇⣧⣀⠑⢆⠀⠀⠀⢹⢄⢀⢧⠊⢀⠊⠀⠘⡡⣪⡴⠛⢻⣷⣜⣿⣦⠀⠀⡀⡿⣸⣿⣿⡆⠀⠀⡠⢐⠫⠉⠩⠭⣗⣦⡀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢠⢹⣷⣻⠇⣿⠘⡀⣿⣿⣿⣿⠛⠛⢦⣙⠄⠀⢈⣫⢼⠀⠤⠁⠀⣠⣾⣿⡇⠀⠐⠂⢻⣿⣟⣿⡇⢠⠃⣧⣿⣿⣾⠁⢀⢎⣴⡶⡿⢿⣟⣷⢮⡝⢿⣷⠤⡀⠀
+⠀⠀⠀⠀⠀⠀⠈⣽⣯⢿⣣⡹⢰⠘⣿⡿⣹⣿⠀⠀⠹⣿⡿⣷⣬⣯⣾⣷⣤⣴⣾⡟⣍⡿⠃⠀⠀⠀⢸⣿⣿⣩⣒⣵⣷⣿⣿⡿⠃⠀⡞⢺⣿⣿⣯⢿⠉⠀⠉⠛⢦⣻⣇⠘⡆
+⠀⠀⠀⠀⠀⠀⣀⣿⣾⡾⣿⣵⡢⠳⢿⣷⢹⣿⣆⠀⠀⠈⠉⢉⣽⢟⣿⠟⢻⢿⣷⣄⡁⠀⠀⠀⠀⣀⣾⡟⣍⣿⣿⣿⣿⣿⣿⡗⠀⠀⠇⣽⣿⣿⣿⡼⠀⠀⣠⡤⣀⠿⠏⣴⠇
+⠀⠀⠀⠀⠀⠀⠸⡼⣿⣿⣽⣿⣿⣶⣬⣿⣯⢿⣷⣥⠶⣒⣶⣾⠏⠐⠙⠀⠈⠚⡌⢪⣿⣧⣖⠦⡭⠿⢛⣼⣿⣿⢿⣿⣿⡿⠝⠁⠀⠰⢀⣿⣿⣾⣿⡇⠀⠀⠻⢿⡝⠲⠛⠋⠀
+⠀⠀⠀⠀⠀⠀⠀⠉⢿⣿⣿⣿⣿⣿⣿⡿⠻⢷⣮⣉⣭⣡⣟⡱⠀⠀⡀⢀⡞⢀⢠⡀⠹⣿⣿⣿⣿⣾⣿⣿⣿⣿⣿⣟⠋⠀⠀⠀⡠⡡⣹⣿⣿⣿⠿⠡⢀⣀⠀⠾⠁⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⠽⢿⢿⣻⡿⠈⢀⣶⣿⣿⣿⣿⡽⠃⢀⡴⣰⣿⢤⣓⢿⣿⣄⠙⣻⣷⡟⣿⣿⣿⣽⡻⣿⠿⠧⡶⣒⢭⣺⣽⣿⠟⢍⢀⠀⡉⠑⢶⣯⡲⣄⠀⠀⠀⠀
+⠀⠀⠀⠀⣀⣀⡀⠀⠀⠀⣟⣷⣞⡟⠉⣴⡿⣯⣷⣿⣿⡟⡡⢀⣜⣼⣿⣿⣎⢳⢿⢻⣿⡄⠑⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⣟⣾⣿⣿⢃⣠⣤⢖⡾⢷⡲⣆⡳⣿⣮⢢⡄⠀⠀
+⠀⠀⡔⣩⢦⣐⣈⣦⣄⡠⢗⣿⣾⢁⣼⢏⣿⣿⣿⣿⡟⠐⣠⢝⣾⣿⣿⣿⣯⡟⣷⣿⣻⣿⣄⢈⢆⠻⢿⣿⣿⣿⣿⣿⣷⣿⣿⣿⣿⡧⢨⣲⣷⣿⠋⣟⣶⣀⣳⡖⣿⣇⣃⠀⠀
+⠀⣘⡸⣞⣿⣿⣿⣿⣿⣿⣿⡿⠁⣺⣣⣿⣿⣿⣿⠎⢀⢢⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣿⣿⣢⢀⠡⡘⢪⡯⡻⣿⣿⣿⣿⣿⣿⣻⣟⢧⣽⣿⣿⠀⠀⣎⣱⡏⣏⣿⣯⡽⠀⠀
+⠀⣿⣧⣼⣿⡟⠛⠛⠿⢟⠟⣁⣼⣿⣿⠛⢉⡜⠁⡠⣠⣷⢿⣿⡿⣿⣿⣿⣿⠟⠉⠙⠛⢯⣽⣯⠷⣄⠑⠜⠑⡷⡜⢿⠿⠟⠛⠉⠀⢸⢺⣾⣿⣿⣷⣄⣀⠏⣱⣿⣿⣿⠀⠀⠀
+⠀⢹⣿⣾⣿⣿⣤⡤⠔⢑⣡⣾⡿⡿⠁⡠⠋⠀⡀⢀⣿⡟⣿⣿⣿⡙⣿⣻⣿⡄⠀⠀⠀⠀⠉⠻⣿⣟⣧⡄⠀⠘⣟⢦⡱⣄⠀⠀⠀⢸⣼⣿⢿⣿⣿⣷⣤⣾⣿⣿⣿⠏⠀⠀⠀
+⠀⠀⠹⢿⣿⠏⣰⣧⣾⣿⣿⠟⠋⠀⡰⠡⡡⠀⣠⣿⣿⣿⣿⣿⣿⣗⢸⣿⣿⣷⠀⠀⠀⠀⠀⠀⠱⡹⣟⣿⣦⡁⠈⠳⢕⢄⠑⠂⠐⢾⣿⣿⣿⣿⣿⠛⠿⠟⠛⠋⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⣯⣼⣿⣿⠋⠁⠀⠀⠀⠀⡇⠐⠀⢠⣿⣿⡝⣿⠃⠈⢻⡞⢸⣿⣿⡟⠀⠀⠀⠀⠀⠀⠀⠉⢻⣷⣾⣿⣦⡄⠀⠀⠈⠐⢺⣽⣿⣿⡎⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⣿⣻⡟⠁⠀⠀⠀⠀⠀⢸⡇⠀⢀⣿⣿⣿⣿⠏⠀⠀⢸⠳⣜⣹⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⡿⢿⣿⣿⣷⣶⣶⣶⣿⣿⢟⣻⣿⢟⡝⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠸⣿⣿⡦⠀⠀⠀⠀⠀⠘⡇⠰⣼⡿⡿⣾⡏⠀⠀⠀⢸⠣⣹⣾⣿⡹⠀⡠⢄⣂⢤⠀⠀⠀⠀⠀⠈⠉⠻⣟⢿⣾⣚⣿⣿⣿⣿⣽⡏⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⢠⣾⢛⣿⡟⠀⠀⠀⠀⠀⠀⢷⣀⢻⣷⣟⣻⡇⠀⠀⢀⢯⣅⣿⣷⣿⠇⣜⣾⣿⣿⣿⣧⣀⠀⠀⠀⠀⠀⠀⠈⠉⠸⠿⣿⠏⠘⠔⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠈⠛⠛⠋⠀⠀⠀⠀⠀⠀⠀⠈⢻⡯⢿⣿⡿⡴⣀⡠⣪⡷⣽⣿⣿⡿⢚⣿⣿⡟⠀⠙⣿⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⢹⡈⠛⠿⠽⢞⢋⠜⠻⣿⣿⣿⣿⠿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠓⠒⠛⠚⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀{RESET}
 Maptnh@S-H4CK13   |  SKBD-Map Backddor Access Map | https://github.com/MartinxMax/'''
 
 TITLE = 'SKBD | Backdoor Access Map'
@@ -78,7 +97,6 @@ html, body, #map { height: 100%; margin:0; padding:0; background-color:#000; }
     font-weight: bold;
     border: 1px solid #9933ff;          
 }
-
 
 .user-popup { 
     background: rgba(10, 10, 10, 0.98) !important; 
@@ -151,6 +169,60 @@ html, body, #map { height: 100%; margin:0; padding:0; background-color:#000; }
     background: #8000ff !important;
 }
 
+.socks-checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px 8px;
+    color: #9933ff;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.socks-checkbox {
+    display: none;
+}
+
+.checkbox-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #9933ff;
+    border-radius: 4px;
+    position: relative;
+    transition: all 0.2s ease;
+    background: transparent;
+}
+
+.socks-checkbox:checked + .checkbox-custom {
+    background-color: #33cc33;
+    border-color: #9933ff;  
+}
+
+.checkbox-custom::after {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 5px;
+    width: 6px;
+    height: 12px;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.socks-checkbox:checked + .checkbox-custom::after {
+    opacity: 1;
+}
+
+.socks-checkbox-container:hover .checkbox-custom {
+    border-color: #b366ff;
+    box-shadow: 0 0 8px rgba(153, 51, 255, 0.4);
+}
+.socks-checkbox:checked + .checkbox-custom:hover {
+    border-color: #4cd964;
+    box-shadow: 0 0 8px rgba(51, 204, 51, 0.4);
+}
 #searchBox { 
     position:absolute; top:10px; right:10px; z-index:9999; 
     background:rgba(0,0,0,0.7); color:#fff; padding:6px; border-radius:6px; width:220px; 
@@ -189,14 +261,12 @@ new QWebChannel(qt.webChannelTransport, function(channel) {
     bridge = channel.objects.bridge;
 });
 
- 
 const defaultIcon = L.icon({
     iconUrl: './location/color_1.png',
     iconSize: [32, 32],
     iconAnchor: [16, 32]
 });
 
- 
 function updateMarkers(data_obj) {
     dataStore = data_obj || {};
     for(let ip in markers) {
@@ -211,11 +281,15 @@ function updateMarkers(data_obj) {
         const coords = (''+item.lalo).split(',').map(x=>parseFloat(x));
         if(coords.length < 2 || isNaN(coords[0]) || isNaN(coords[1])) continue;
         
-  
         const ipTooltip = `<div>${ip}</div>`;
      
         let usersPopup = `<div class="user-popup">
     <div class="popup-title">Login</div>
+    <div class="socks-checkbox-container">
+    <input type="checkbox" id="socks-${ip}" class="socks-checkbox"/>
+    <label for="socks-${ip}" class="checkbox-custom"></label>
+    <span>Enable Proxy</span>
+</div>
     <div class="user-list-container">  
 `;
 item.users.forEach(user => {
@@ -243,14 +317,16 @@ function executeSSH(ip, user) {
     if(!bridge) { alert('Bridge not ready!'); return; }
     try {
         if(markers[ip]) markers[ip].closePopup();
-        bridge.executeSSH(ip, user);
+ 
+        const isSocks = document.getElementById(`socks-${ip}`)?.checked || false;
+ 
+        bridge.executeSSH(ip, user, isSocks);
     } catch(e) {
         console.error('SSH Error:', e);
         alert( e.message);
     }
 }
 
- 
 document.getElementById('searchInput').addEventListener('input', function() {
     const q = this.value.trim().toLowerCase();
     const resultsDiv = document.getElementById('searchResults');
@@ -278,7 +354,19 @@ document.getElementById('searchInput').addEventListener('input', function() {
 </body>
 </html>
 '''
- 
+
+def get_random_available_port(start=10000, end=65535):
+    max_retry = 20
+    retry = 0
+    while retry < max_retry:
+        port = random.randint(start, end)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(0.05)
+            if s.connect_ex(('127.0.0.1', port)) != 0:
+                return port
+        retry += 1
+    return random.randint(50000, 65535)
+
 def parse_info_conf(conf_path, md5_dir):
     config = configparser.ConfigParser()
     try:
@@ -380,30 +468,42 @@ class Bridge(QObject):
         self.parent_window = parent
         self.machines_data = {}
     
-    @pyqtSlot(str, str)
-    def executeSSH(self, ip, user):
+    @pyqtSlot(str, str, bool)  
+    def executeSSH(self, ip, user, isSocks):
         if ip not in self.machines_data:
             log.error(f"Information for IP {ip} not found")
             return
         
         device_info = self.machines_data[ip]
         cert_path = f'./machines/{device_info["md5"]}/skbd.pub'
+    
         ssh_cmd = (
             f'ssh -i {SSH_KEY_PATH} '
             f'-o CertificateFile={cert_path} '
             f'-p {DEFAULT_SSH_PORT} '
-            f'{user}@{ip}'
         )
-        
  
+        proxy_port = None
+        if isSocks:
+            proxy_port = get_random_available_port()
+            ssh_cmd += f'-D {proxy_port} '
+            log.info(f"IP {ip} SOCKS proxy enabled: 127.0.0.1:{proxy_port}")
+        ssh_cmd += f'{user}@{ip}'
+        
         try:
             if sys.platform.startswith('win'):
                 subprocess.Popen(f'cmd /k {ssh_cmd}', creationflags=subprocess.CREATE_NEW_CONSOLE)
             else:
-                subprocess.Popen(['x-terminal-emulator', '-e', ssh_cmd])
+                for term in ['x-terminal-emulator', 'xterm', 'gnome-terminal', 'konsole']:
+                    if subprocess.run(['which', term], capture_output=True, text=True).returncode == 0:
+                        subprocess.Popen([term, '-e', ssh_cmd])
+                        break
+                else:
+                    subprocess.Popen(['bash', '-c', ssh_cmd])
         except Exception as e:
-            log.error(f"{e}")
-    
+            log.error(f"SSH execute failed: {str(e)}")
+            
+                
     def set_machines_data(self, data):
         self.machines_data = data
 
